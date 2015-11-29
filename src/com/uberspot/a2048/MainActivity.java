@@ -3,6 +3,9 @@ package com.uberspot.a2048;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
@@ -21,6 +24,7 @@ import android.view.WindowManager.LayoutParams;
 import android.webkit.WebSettings;
 import android.webkit.WebSettings.RenderPriority;
 import android.webkit.WebView;
+import android.webkit.JavascriptInterface;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
@@ -78,6 +82,8 @@ public class MainActivity extends Activity {
         settings.setDatabaseEnabled(true);
         settings.setRenderPriority(RenderPriority.HIGH);
         settings.setDatabasePath("/data/data/" + packageName + "/databases");
+
+        mWebView.addJavascriptInterface(new GamePicker(this), "gamepicker");
 
         // If there is a previous instance restore it in the webview
         if (savedInstanceState != null) {
@@ -164,6 +170,38 @@ public class MainActivity extends Activity {
         } else {
             pressBackToast.cancel();
             super.onBackPressed();
+        }
+    }
+
+    public class GamePicker {
+        Context mContext;
+
+        GamePicker(Context ctx) {
+            mContext = ctx;
+        }
+
+        @JavascriptInterface
+        public void pickGame(String[] gameIds) {
+            if (gameIds.length == 0) {
+                Toast.makeText(mContext, "No game has been saved.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+            builder.setTitle("Pick a saved game");
+            builder.setItems(gameIds, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int item) {
+                    final int iList = item;
+                    ((MainActivity)mContext).runOnUiThread(new Runnable() {
+                                                               @Override
+                                                               public void run() {
+                                                                   mWebView.evaluateJavascript("gm.loadSavedSession("+iList+")",null);
+                                                               }
+                                                           });
+
+                }
+            });
+            AlertDialog alert = builder.create();
+            alert.show();
         }
     }
 }
