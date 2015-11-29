@@ -6,8 +6,6 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
 
   this.startTiles     = 2;
 
-  this.tmp = 0;
-
   this.inputManager.on("move", this.move.bind(this));
   this.inputManager.on("restart", this.restart.bind(this));
   this.inputManager.on("restartWithConfirmation", this.restartWithConfirmation.bind(this));
@@ -26,7 +24,6 @@ GameManager.prototype.restart = function () {
 };
 
 // Restart the game after user confirmation
-
 GameManager.prototype.restartWithConfirmation = function () {
     // Open confirm message
     this.actuator.promptRestart();
@@ -45,7 +42,7 @@ GameManager.prototype.pickSavedSession = function () {
   gamepicker.pickGame(gameArchInf.games);
 };
 
-// Load and resume the saved game sessoin at index
+// Load and resume the saved game session at index
 GameManager.prototype.loadSavedSession = function (index) {
   var oldSession;
   oldSession = this.storageManager.loadGameAtIndex(index);
@@ -61,7 +58,7 @@ GameManager.prototype.saveCurrentSession = function () {
   var self = this;
   if (curSession) {
     var now = new Date();
-    gameName = ""+now.getFullYear() + (now.getMonth()+1) + now.getDate() + now.getHours() + now.getMinutes() + now.getSeconds();
+    gameName = now.toLocaleString();
     this.storageManager.saveGameState(curSession, gameName);
     this.storageManager.updateArchiveInf(gameName);
     this.actuator.promptSaveGame();

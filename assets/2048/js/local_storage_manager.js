@@ -19,9 +19,10 @@ window.fakeStorage = {
 };
 
 function LocalStorageManager() {
+  this.MAX_SAVED_GAMES  = 5;
   this.bestScoreKey     = "bestScore";
   this.gameStateKey     = "gameState";
-  this.archiveInfKey     = "archiveInf";
+  this.archiveInfKey    = "archiveInf";
 
   var supported = this.localStorageSupported();
   this.storage = supported ? window.localStorage : window.fakeStorage;
@@ -86,11 +87,14 @@ LocalStorageManager.prototype.saveGameState = function (gameState, gameName) {
 LocalStorageManager.prototype.updateArchiveInf = function (gameName) {
   var archive = this.retrieveArchiveInf();
 
-  if (archive.games.length == 5) {
+  if (archive.games.length == this.MAX_SAVED_GAMES) {
+    //Remove the oldest game saved from storage
     this.storage.removeItem(archive.games[0]);
+    //Move the other saved games one step to the start
     for (i=0; i<archive.games.length-1; i++) {
       archive.games[i] = archive.games[i+1];
     }
+    //Make room for the next game to be saved
     archive.games.pop();
   }
 
