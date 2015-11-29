@@ -6,10 +6,14 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
 
   this.startTiles     = 2;
 
+  this.tmp = 0;
+
   this.inputManager.on("move", this.move.bind(this));
   this.inputManager.on("restart", this.restart.bind(this));
   this.inputManager.on("restartWithConfirmation", this.restartWithConfirmation.bind(this));
   this.inputManager.on("keepPlaying", this.keepPlaying.bind(this));
+  this.inputManager.on("saveGame", this.saveCurrentSession.bind(this));
+  this.inputManager.on("loadGame", this.pickSavedSession.bind(this));
 
   this.setup();
 }
@@ -33,6 +37,36 @@ GameManager.prototype.keepPlaying = function () {
   this.keepPlaying = true;
   this.actuator.continueGame(); // Clear the game won/lost message
   this.actuate();
+};
+
+// Pick a saved game session from the saved list
+GameManager.prototype.pickSavedSession = function () {
+  var gameArchInf = this.storageManager.retrieveArchiveInf();
+  gamepicker.pickGame(gameArchInf.games);
+};
+
+// Load and resume the saved game sessoin at index
+GameManager.prototype.loadSavedSession = function (index) {
+  var oldSession;
+  oldSession = this.storageManager.loadGameAtIndex(index);
+  if (oldSession) {
+    this.storageManager.setGameState(oldSession);
+    this.setup();
+  }
+}
+
+// Save current game session for future load
+GameManager.prototype.saveCurrentSession = function () {
+  var curSession = this.storageManager.getGameState();
+  var self = this;
+  if (curSession) {
+    var now = new Date();
+    gameName = ""+now.getFullYear() + (now.getMonth()+1) + now.getDate() + now.getHours() + now.getMinutes() + now.getSeconds();
+    this.storageManager.saveGameState(curSession, gameName);
+    this.storageManager.updateArchiveInf(gameName);
+    this.actuator.promptSaveGame();
+    setTimeout(function(){self.actuator.continueGame();}, 1000);
+  }
 };
 
 // Return true if the game is lost, or has won and the user hasn't kept playing

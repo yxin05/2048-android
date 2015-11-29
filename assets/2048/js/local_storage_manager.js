@@ -21,6 +21,7 @@ window.fakeStorage = {
 function LocalStorageManager() {
   this.bestScoreKey     = "bestScore";
   this.gameStateKey     = "gameState";
+  this.archiveInfKey     = "archiveInf";
 
   var supported = this.localStorageSupported();
   this.storage = supported ? window.localStorage : window.fakeStorage;
@@ -61,3 +62,53 @@ LocalStorageManager.prototype.setGameState = function (gameState) {
 LocalStorageManager.prototype.clearGameState = function () {
   this.storage.removeItem(this.gameStateKey);
 };
+
+// Load an old game session
+LocalStorageManager.prototype.loadGameSaved = function (gameName) {
+  var stateJSON = this.storage.getItem(gameName);
+  return stateJSON ? JSON.parse(stateJSON) : null;
+};
+
+// Load the saved game at index
+LocalStorageManager.prototype.loadGameAtIndex = function (index) {
+  var archive = this.retrieveArchiveInf();
+  if (index < 0 || index > archive.games.length-1) return null;
+  var stateJSON = this.storage.getItem(archive.games[index]);
+  return stateJSON ? JSON.parse(stateJSON) : null;
+};
+
+// Save current game session
+LocalStorageManager.prototype.saveGameState = function (gameState, gameName) {
+  this.storage.setItem(gameName, JSON.stringify(gameState));
+};
+
+// Update the meta data info for the saved games, remove old games if necessary
+LocalStorageManager.prototype.updateArchiveInf = function (gameName) {
+  var archive = this.retrieveArchiveInf();
+
+  if (archive.games.length == 5) {
+    this.storage.removeItem(archive.games[0]);
+    for (i=0; i<archive.games.length-1; i++) {
+      archive.games[i] = archive.games[i+1];
+    }
+    archive.games.pop();
+  }
+
+  archive.games.push(gameName);
+  this.storage.setItem(this.archiveInfKey, JSON.stringify(archive));
+}
+
+// Get meta data info for the saved games as a JSON object
+LocalStorageManager.prototype.retrieveArchiveInf = function () {
+  var archive;
+  var stateJSON = this.storage.getItem(this.archiveInfKey);
+
+  if ( stateJSON ) {
+    archive = JSON.parse(stateJSON);
+  }
+  else {
+    archive = {games:[]};
+  }
+
+  return archive;
+}

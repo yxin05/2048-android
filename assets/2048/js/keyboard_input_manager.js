@@ -71,6 +71,8 @@ KeyboardInputManager.prototype.listen = function () {
   // Respond to button presses
   this.bindButtonPress(".retry-button", this.restart);
   this.bindButtonPress(".restart-button", this.restartWithConfirmation);
+  this.bindButtonPress(".save-game-button", this.saveGame);
+  this.bindButtonPress(".load-game-button", this.loadGame);
   this.bindButtonPress(".keep-playing-button", this.keepPlaying);
   this.bindButtonPress(".confirm-button", this.restart);
   this.bindButtonPress(".cancel-button", this.keepPlaying);
@@ -148,4 +150,14 @@ KeyboardInputManager.prototype.bindButtonPress = function (selector, fn) {
   var button = document.querySelector(selector);
   button.addEventListener("click", fn.bind(this));
   button.addEventListener(this.eventTouchend, fn.bind(this));
+};
+
+KeyboardInputManager.prototype.saveGame = function (event) {
+  event.preventDefault();
+  this.emit("saveGame");
+};
+
+KeyboardInputManager.prototype.loadGame = function (event) {
+  event.preventDefault();
+  this.emit("loadGame");
 };

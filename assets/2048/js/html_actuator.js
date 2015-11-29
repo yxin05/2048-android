@@ -149,9 +149,16 @@ HTMLActuator.prototype.promptRestart = function () {
   this.messageContainer.getElementsByTagName("p")[0].textContent = message;
 };
 
+HTMLActuator.prototype.promptSaveGame = function () {
+  var message = "Game saved!";
+  this.messageContainer.classList.add("save-game");
+  this.messageContainer.getElementsByTagName("p")[0].textContent = message;
+};
+
 HTMLActuator.prototype.clearMessage = function () {
   // IE only takes one value to remove at a time.
   this.messageContainer.classList.remove("game-won");
   this.messageContainer.classList.remove("game-over");
   this.messageContainer.classList.remove("restart-game");
+  this.messageContainer.classList.remove("save-game");
 };
